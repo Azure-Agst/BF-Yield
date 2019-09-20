@@ -21,14 +21,14 @@ from bungie_api import api_key, client_id, client_secret
 
 # Init config
 config = configparser.ConfigParser()
-config.read('config.ini')
+config.read(os.getenv('LOCALAPPDATA')+"\\bf-yield\\config.ini")
 if "API" not in config:
     config['API'] = {}
 
 # Parse Options
 parser = OptionParser()
-parser.add_option("-a", "--api", dest="api", action="store_true", help="Enables new API methodology")
-parser.add_option("-l", "--live-view", dest="live", action="store_true", help="If used with --api, enables live view of the inventory!")
+parser.add_option("-o", "--offline", dest="offline", action="store_true", help="Reverts to the old offline calculator")
+parser.add_option("-l", "--live-view", dest="live", action="store_true", help="If used with api, enables live view of the inventory!")
 (options, args) = parser.parse_args()
 
 
@@ -42,10 +42,16 @@ def printTitle():
     print("Destiny 2 BF-AFK Yield Calculator v1.0")
     print("Copyright (C) 2019 Azure-Agst")
 
+# Save Config
+def saveConfig():
+    if not os.path.exists(os.getenv('LOCALAPPDATA')+"\\bf-yield"):
+        os.mkdir(os.getenv('LOCALAPPDATA')+"\\bf-yield", 0o755)
+    with open(os.getenv('LOCALAPPDATA')+"\\bf-yield\\config.ini", 'w') as configfile:
+        config.write(configfile)
+
 # Kill App Function
 def quitApp():
-    with open('config.ini', 'w') as configfile:
-        config.write(configfile)
+    saveConfig()
     input("\nPress any key to exit...")
     sys.exit(0)
 
@@ -173,6 +179,11 @@ def calcNewAPI():
     # Start fuckin with the API
     membership = getUserMembership(req_headers)
     latestChar = getLatestChar(req_headers, membership)
+
+    # Save config
+    saveConfig()
+
+    # Switch
     if options.live:
         while 1:
             materials = getItemCount(req_headers, membership, latestChar)
@@ -227,10 +238,10 @@ def calculator(materials):
 
 # Main Switch
 printTitle()
-if options.api:
-    calcNewAPI()
-else:
+if options.offline:
     offlineCalc()
+else:
+    calcNewAPI()
 
 # Just in case it doesn't exit already
 quitApp()
