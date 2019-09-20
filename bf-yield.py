@@ -157,20 +157,21 @@ def getLatestChar(headers, membership):
 def getItemCount(headers, membership, latestCharId):
     materials = {"dusk": 0, "data": 0}
     try:
-        invenRes = json.loads(requests.get("{}/Destiny2/{}/Profile/{}/?components=CharacterInventories".format(base_url, membership[0], membership[1]), headers=headers).text)
+        invenRes = json.loads(requests.get("{}/Destiny2/{}/Profile/{}/?components=ProfileInventories,CharacterInventories".format(base_url, membership[0], membership[1]), headers=headers).text)
     except ConnectionError:
         print('Character Inventories Request Failed? Probably isolated. Try again!')
         return materials
-    inventory = invenRes["Response"]["characterInventories"]["data"][latestCharId]["items"]
-    for item in inventory:
-        if item["itemHash"] == 950899352:
-            materials['dusk'] = item['quantity']
-            if not options.live and not config['Main']['Live'] == 'True':
-                print("Dusklight found! Quantity:", item['quantity'])
-        elif item["itemHash"] == 3487922223:
-            materials['data'] = item['quantity']
-            if not options.live and not config['Main']['Live'] == 'True':
-                print("Datalattice found! Quantity:", item['quantity'])
+    inventories = { 'Inventory': invenRes["Response"]["profileInventory"]["data"]["items"], 'Postmaster': invenRes["Response"]["characterInventories"]["data"][latestCharId]["items"] }
+    for invenName in inventories:
+        for item in inventories[invenName]:
+            if item["itemHash"] == 950899352:
+                materials['dusk'] += item['quantity']
+                if not options.live and not config['Main']['Live'] == 'True':
+                    print("Found {} Dusklight in {}!".format(item['quantity'], invenName))
+            elif item["itemHash"] == 3487922223:
+                materials['data'] += item['quantity']
+                if not options.live and not config['Main']['Live'] == 'True':
+                    print("Found {} Datalattice in {}!".format(item['quantity'], invenName))
     return materials
 
 
@@ -227,11 +228,12 @@ def offlineCalc():
 def calculator(materials):
     #printTitle()
     for key in materials:
-        if materials[key] == 0:
+        itemname = {"dusk": "Dusklight", "data": "Datalattice"}
+        if materials[key] < 55:
+            print("\nSkipping {}, not enough to claim a full engram...".format(itemname[key]))
             continue
 
         # Item Name
-        itemname = {"dusk": "Dusklight", "data": "Datalattice"}
         print("\nItem:", itemname[key])
 
         # Amount
