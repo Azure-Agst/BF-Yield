@@ -120,7 +120,7 @@ def refreshToken():
 def getUserMembership(headers):
     try:
         membResTemp = requests.get("{}/User/GetMembershipsForCurrentUser/".format(base_url), headers=headers)
-    except ConnectionError:
+    except requests.exceptions.ConnectionError:
         print("Get User Memberships Failed? Probably isolated, however this error's fatal. Launch app again!")
         return quitApp()
     membRes = json.loads(membResTemp.text)
@@ -137,7 +137,7 @@ def getLatestChar(headers, membership):
     latestCharId = ""
     try:
         charRes = json.loads(requests.get("{}/Destiny2/{}/Profile/{}/?components=Characters".format(base_url, membership[0], membership[1]), headers=headers).text)
-    except ConnectionError:
+    except requests.exceptions.ConnectionError:
         print('Get Latest Character Request Failed? Probably isolated. Try again!')
         return latestCharId
     characters = charRes["Response"]["characters"]["data"]
@@ -160,7 +160,7 @@ def getItemCount(headers, membership, latestCharId):
     while True:
         try:
             invenRes = json.loads(requests.get("{}/Destiny2/{}/Profile/{}/?components=ProfileInventories,CharacterInventories".format(base_url, membership[0], membership[1]), headers=headers).text)
-        except ConnectionError:
+        except requests.exceptions.ConnectionError:
             print('Character Inventories Request Failed? Probably isolated. Try again!')
             return materials
         if invenRes['ErrorCode'] == 99:
@@ -211,8 +211,8 @@ def calcNewAPI():
                 materials = getItemCount(req_headers, membership, latestChar)
                 printTitle()
                 calculator(materials)
-                for x in range(10):
-                    print("[ {} seconds to refresh. Press Ctrl-C to exit. ]".format(9-x), end="\r")
+                for x in range(30):
+                    print("[ {} seconds to refresh. Press Ctrl-C to exit. ]".format(str(29-x).zfill(2)), end="\r")
                     time.sleep(1)
         except KeyboardInterrupt:
             print("\n") # For spacing.
@@ -259,6 +259,8 @@ def calculator(materials):
         curated = round(engrams/10) # 10% is an estimated value based of my IRL stats
         print(" - Curated rolls:", curated)
     print("") # Spacing.
+    if materials["dusk"] == 0 and materials["data"] == 0:
+        print("Looks like we've encountered a error. Data will be restored on next refresh.\n")
 
 # Main Switch
 printTitle()
