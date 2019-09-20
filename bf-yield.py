@@ -2,6 +2,8 @@
 # Copyright (C) 2019 Andrew "Azure-Agst" Augustine
 # (...Does a file this small even warrant a copyright? Lmao.)
 
+# TO-DO: Allow user to specify config file
+
 # Imports
 import sys
 import math
@@ -89,7 +91,7 @@ def getAccessToken():
 # Refresh Token
 def refreshToken():
     print("Refreshing Cached Token...")
-    postData = {'grant_type': 'refresh_token', 'refresh_token': config['API']['refresh_token']}
+    postData = {'grant_type': 'refresh_token', 'refresh_token': config['API']['refresh_token'], 'client_id':client_id, 'client_secret': client_secret }
     tokenRes = json.loads(requests.post("https://www.bungie.net/Platform/App/OAuth/token/", data=postData).text)
     if "error" in tokenRes:
         print("ERROR: Error while refreshing token!")
