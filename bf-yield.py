@@ -46,6 +46,13 @@ if "API" not in config:
 # SUPPLEMENTAL FUNCTIONS #
 ##########################
 
+# Log
+def log(string):
+    with open(os.getenv('LOCALAPPDATA')+"\\bf-yield\\log.txt", 'w') as log:
+        log.truncate(0)
+        log.write(str(string))
+        log.close()
+
 # Print Title
 def printTitle():
     os.system('cls')
@@ -159,10 +166,15 @@ def getItemCount(headers, membership, latestCharId):
     materials = {"dusk": 0, "data": 0}
     while True:
         try:
-            invenRes = json.loads(requests.get("{}/Destiny2/{}/Profile/{}/?components=ProfileInventories,CharacterInventories".format(base_url, membership[0], membership[1]), headers=headers).text)
+            res = requests.get("{}/Destiny2/{}/Profile/{}/?components=ProfileInventories,CharacterInventories".format(base_url, membership[0], membership[1]), headers=headers).text
+            log(res)
+            invenRes = json.loads(res)
         except requests.exceptions.ConnectionError:
             print('Character Inventories Request Failed? Probably isolated. Try again!')
             return materials
+        except json.decoder.JSONDecodeError:
+            print('Token expired. Refreshing!')
+            refreshToken()
         if invenRes['ErrorCode'] == 99:
             refreshToken()
         else:
