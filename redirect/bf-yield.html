@@ -14,7 +14,15 @@
             if (!vars["code"]){
                 dmain.innerHTML = "<h1>Error</h1><p>Uh-oh! Something went wrong!</p>"
             } else {
-                dmain.innerHTML = "<h1>Auth Code</h1><p>Paste this code back into bf-yield:</p><code>"+vars["state"]+"|"+vars["code"]+"</code>"
+                dmain.innerHTML = "<h1>Auth Code</h1> \
+                <p>Paste this code back into bf-yield:</p> \
+                <input type='text' id='code' size='60' value='"+vars["state"]+"|"+vars["code"]+"''> \
+                <button onClick='copy()'>Copy</button>"
+            }
+            function copy(){
+                document.getElementById('code').select();
+                document.execCommand("copy"); 
+                dmain.innerHTML += "<p>Copied text to clipboard!</p>"
             }
         </script>
     </body>
