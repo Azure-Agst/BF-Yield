@@ -15,7 +15,7 @@ from datetime import datetime, timedelta
 from optparse import OptionParser
 
 # GLOBAL VARS
-version = "2.0.1"
+version = "2.1.0"
 base_url = "https://www.bungie.net/Platform"
 from bungie_api import api_key, client_id, client_secret
 
@@ -62,11 +62,12 @@ def saveConfig():
             os.mkdir(os.getenv('LOCALAPPDATA')+"\\bf-yield", 0o755)
         with open(os.getenv('LOCALAPPDATA')+"\\bf-yield\\config.ini", 'w') as configfile:
             config.write(configfile)
+    print("Saved config!")
 
 # Kill App Function
 def quitApp():
     saveConfig()
-    input("\nPress any key to exit...")
+    input("Press any key to exit...")
     sys.exit(0)
 
 
@@ -200,25 +201,26 @@ def calcNewAPI():
     membership = getUserMembership(req_headers)
     latestChar = getLatestChar(req_headers, membership)
 
-    # Save config
+    # Save config, in case of runtime error
     saveConfig()
 
     # Switch
     if options.live or config['Main']['Live'] == 'True':
-        while 1:
-            materials = getItemCount(req_headers, membership, latestChar)
-            printTitle()
-            calculator(materials)
-            print("") # once again, just for spacing.
-            for x in range(10):
-                print(".", end="", flush=True)
-                time.sleep(1)
+        try:
+            while 1:
+                materials = getItemCount(req_headers, membership, latestChar)
+                printTitle()
+                calculator(materials)
+                for x in range(10):
+                    print("[ {} seconds to refresh. Press Ctrl-C to exit. ]".format(9-x), end="\r")
+                    time.sleep(1)
+        except KeyboardInterrupt:
+            print("\n") # For spacing.
+            quitApp()
     else:
         materials = getItemCount(req_headers, membership, latestChar)
         calculator(materials)
-    
-    # End App
-    quitApp()
+        quitApp()
 
 
 # Offline Calculator
@@ -251,11 +253,12 @@ def calculator(materials):
         # Shards
         minshards = engrams*6
         maxshards = engrams*10
-        print(" - LShards: [Min: {}, Max: {}, Est: {}]".format(minshards, maxshards, engrams*8))
+        print(" - LShards: [ Min: {}, Max: {}, Est: {} ]".format(minshards, maxshards, engrams*8))
 
         # Curated Drops
         curated = round(engrams/10) # 10% is an estimated value based of my IRL stats
         print(" - Curated rolls:", curated)
+    print("") # Spacing.
 
 # Main Switch
 printTitle()
