@@ -21,17 +21,27 @@ from optparse import OptionParser
 base_url = "https://www.bungie.net/Platform"
 from bungie_api import api_key, client_id, client_secret
 
-# Init config
-config = configparser.ConfigParser()
-config.read(os.getenv('LOCALAPPDATA')+"\\bf-yield\\config.ini")
-if "API" not in config:
-    config['API'] = {}
-
 # Parse Options
 parser = OptionParser()
 parser.add_option("-o", "--offline", dest="offline", action="store_true", help="Reverts to the old offline calculator")
+parser.add_option("-c", "--config", dest="infile", action="store", type="string", help="Use specified config.ini")
 parser.add_option("-l", "--live-view", dest="live", action="store_true", help="If used with api, enables live view of the inventory!")
 (options, args) = parser.parse_args()
+
+# Init config
+config = configparser.ConfigParser()
+configLocation = os.getenv('LOCALAPPDATA')+"\\bf-yield\\config.ini"
+if options.infile and not os.path.exists(options.infile):
+    print("Error: Specified config file does not exist! Exiting...")
+    time.sleep(1)
+    sys.exit(1)
+elif options.infile:
+    configLocation = options.infile
+config.read(configLocation)
+if "Main" not in config:
+    config['Main'] = {'Live': 'False'}
+if "API" not in config:
+    config['API'] = {}
 
 
 ##########################
@@ -46,10 +56,14 @@ def printTitle():
 
 # Save Config
 def saveConfig():
-    if not os.path.exists(os.getenv('LOCALAPPDATA')+"\\bf-yield"):
-        os.mkdir(os.getenv('LOCALAPPDATA')+"\\bf-yield", 0o755)
-    with open(os.getenv('LOCALAPPDATA')+"\\bf-yield\\config.ini", 'w') as configfile:
-        config.write(configfile)
+    if options.infile:
+        with open(options.infile, 'w') as configfile:
+            config.write(configfile)
+    else:
+        if not os.path.exists(os.getenv('LOCALAPPDATA')+"\\bf-yield"):
+            os.mkdir(os.getenv('LOCALAPPDATA')+"\\bf-yield", 0o755)
+        with open(os.getenv('LOCALAPPDATA')+"\\bf-yield\\config.ini", 'w') as configfile:
+            config.write(configfile)
 
 # Kill App Function
 def quitApp():
@@ -153,11 +167,11 @@ def getItemCount(headers, membership, latestCharId):
     for item in inventory:
         if item["itemHash"] == 950899352:
             materials['dusk'] = item['quantity']
-            if not options.live:
+            if not options.live and not config['Main']['Live'] == 'True':
                 print("Dusklight found! Quantity:", item['quantity'])
         elif item["itemHash"] == 3487922223:
             materials['data'] = item['quantity']
-            if not options.live:
+            if not options.live and not config['Main']['Live'] == 'True':
                 print("Datalattice found! Quantity:", item['quantity'])
     return materials
 
@@ -186,7 +200,7 @@ def calcNewAPI():
     saveConfig()
 
     # Switch
-    if options.live:
+    if options.live or config['Main']['Live'] == 'True':
         while 1:
             materials = getItemCount(req_headers, membership, latestChar)
             printTitle()
@@ -220,7 +234,7 @@ def calculator(materials):
 
         # Item Name
         itemname = {"dusk": "Dusklight", "data": "Datalattice"}
-        print("\nItem: ", itemname[key])
+        print("\nItem:", itemname[key])
 
         # Amount
         print(" - Amount:", materials[key])
