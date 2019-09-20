@@ -1,8 +1,5 @@
 # BF-AFK-Yield.py
 # Copyright (C) 2019 Andrew "Azure-Agst" Augustine
-# (...Does a file this small even warrant a copyright? Lmao.)
-
-# TO-DO: Allow user to specify config file
 
 # Imports
 import sys
@@ -18,6 +15,7 @@ from datetime import datetime, timedelta
 from optparse import OptionParser
 
 # GLOBAL VARS
+version = "2.0.1"
 base_url = "https://www.bungie.net/Platform"
 from bungie_api import api_key, client_id, client_secret
 
@@ -25,7 +23,7 @@ from bungie_api import api_key, client_id, client_secret
 parser = OptionParser()
 parser.add_option("-o", "--offline", dest="offline", action="store_true", help="Reverts to the old offline calculator")
 parser.add_option("-c", "--config", dest="infile", action="store", type="string", help="Use specified config.ini")
-parser.add_option("-l", "--live-view", dest="live", action="store_true", help="If used with api, enables live view of the inventory!")
+parser.add_option("-l", "--live-view", dest="live", action="store_true", help="If used with api, enables live view of the inventory! (Can also be triggered by setting Main.Live to True in config.ini)")
 (options, args) = parser.parse_args()
 
 # Init config
@@ -51,7 +49,7 @@ if "API" not in config:
 # Print Title
 def printTitle():
     os.system('cls')
-    print("Destiny 2 BF-AFK Yield Calculator v1.0")
+    print("Destiny 2 BF-AFK Yield Calculator v{}".format(version))
     print("Copyright (C) 2019 Azure-Agst")
 
 # Save Config
