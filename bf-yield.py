@@ -156,11 +156,16 @@ def getLatestChar(headers, membership):
 # Get Character Inventories
 def getItemCount(headers, membership, latestCharId):
     materials = {"dusk": 0, "data": 0}
-    try:
-        invenRes = json.loads(requests.get("{}/Destiny2/{}/Profile/{}/?components=ProfileInventories,CharacterInventories".format(base_url, membership[0], membership[1]), headers=headers).text)
-    except ConnectionError:
-        print('Character Inventories Request Failed? Probably isolated. Try again!')
-        return materials
+    while True:
+        try:
+            invenRes = json.loads(requests.get("{}/Destiny2/{}/Profile/{}/?components=ProfileInventories,CharacterInventories".format(base_url, membership[0], membership[1]), headers=headers).text)
+        except ConnectionError:
+            print('Character Inventories Request Failed? Probably isolated. Try again!')
+            return materials
+        if invenRes['ErrorCode'] == 99:
+            refreshToken()
+        else:
+            break
     inventories = { 'Inventory': invenRes["Response"]["profileInventory"]["data"]["items"], 'Postmaster': invenRes["Response"]["characterInventories"]["data"][latestCharId]["items"] }
     for invenName in inventories:
         for item in inventories[invenName]:
