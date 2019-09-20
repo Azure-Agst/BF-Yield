@@ -1,0 +1,21 @@
+<html>
+    <head>
+        <meta charset="utf-8"/>
+        <title>Code</title>
+    </head>
+    <body>
+        <div id="main">
+            <h1>Loading...</h1>
+        </div>
+        <script>
+            var dmain = document.getElementById("main")
+            var vars = {};
+            var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {vars[key] = value;});
+            if (!vars["code"]){
+                dmain.innerHTML = "<h1>Error</h1><p>Uh-oh! Something went wrong!</p>"
+            } else {
+                dmain.innerHTML = "<h1>Auth Code</h1><p>Paste this code back into bf-yield:</p><code>"+vars["state"]+"|"+vars["code"]+"</code>"
+            }
+        </script>
+    </body>
+</html>
